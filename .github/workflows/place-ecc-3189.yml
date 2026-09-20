@@ -1,0 +1,41 @@
+name: place-ecc-3189
+on:
+  push:
+    paths:
+      - ".github/workflows/place-ecc-3189.yml"
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: place-ecc-3189
+  cancel-in-progress: true
+jobs:
+  place:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download demo assets and commit
+        run: |
+          set -euo pipefail
+          GIF_URL='https://tmpfiles.org/dl/1789924046.d3b14eee6ed71f3e/wDwrxJy8kHxN/preview.gif'
+          MP4_URL='https://tmpfiles.org/dl/1789924076.59b31b9a80de567a/wLwkxAyIqSm7/out.mp4'
+          mkdir -p ECC/3189
+          curl -fL --retry 3 -A "Mozilla/5.0" "$GIF_URL" -o ECC/3189/preview.gif
+          curl -fL --retry 3 -A "Mozilla/5.0" "$MP4_URL" -o ECC/3189/out.mp4
+          python3 - <<'PY'
+          from pathlib import Path
+          g = Path("ECC/3189/preview.gif").read_bytes()
+          m = Path("ECC/3189/out.mp4").read_bytes()
+          assert g[:6] == b"GIF89a", g[:16]
+          assert m[4:8] == b"ftyp", m[:16]
+          print("gif", len(g), "mp4", len(m))
+          PY
+          rm -f ECC/3189/.publish-probe ECC/3189/tiny.gif ECC/3189/.src-urls.txt
+          rm -f .github/workflows/place-ecc-3189.yml
+          rmdir .github/workflows 2>/dev/null || true
+          rmdir .github 2>/dev/null || true
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "Add ECC/3189 HyperFrames instinct-enforce demo"
+          git push
