@@ -1,0 +1,64 @@
+name: Publish awesome-llm-apps 1196
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - ".github/workflows/publish-awesome-llm-apps-1196.yml"
+      - "awesome-llm-apps/1196/staging.json"
+permissions:
+  contents: write
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Fetch and commit binaries
+        env:
+          MP4_PAGE: https://tmpfiles.org/wfwXx8yysPXY/out.mp4
+          GIF_PAGE: https://tmpfiles.org/wCwvxpynshjk/preview.gif
+        run: |
+          set -euo pipefail
+          mkdir -p awesome-llm-apps/1196
+          python3 << 'PY'
+          import os, re, urllib.request, pathlib, hashlib, json, base64
+          ua = {"User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 Chrome/126.0.0.0 Safari/537.36"}
+          dest_mp4 = pathlib.Path("awesome-llm-apps/1196/out.mp4")
+          dest_gif = pathlib.Path("awesome-llm-apps/1196/preview.gif")
+
+          def fetch(page, dest, expect_magic):
+              html = urllib.request.urlopen(urllib.request.Request(page, headers=ua), timeout=60).read().decode()
+              m = re.search(r'href="(https://tmpfiles.org/dl/[^"]+)"', html)
+              if not m:
+                  raise RuntimeError(f"no download link in {page}")
+              data = urllib.request.urlopen(urllib.request.Request(m.group(1), headers=ua), timeout=180).read()
+              if not data.startswith(expect_magic):
+                  raise RuntimeError(f"bad magic for {dest}: {data[:16]!r}")
+              dest.write_bytes(data)
+              print(dest, len(data), hashlib.md5(data).hexdigest())
+
+          staging = pathlib.Path("awesome-llm-apps/1196/staging.json")
+          if staging.exists():
+              spec = json.loads(staging.read_text())
+              for item in spec.get("files", []):
+                  parts = [pathlib.Path(p).read_text().strip() for p in item["parts"]]
+                  data = base64.b64decode("".join(parts))
+                  out = pathlib.Path(item["path"])
+                  out.parent.mkdir(parents=True, exist_ok=True)
+                  out.write_bytes(data)
+                  print("decoded", out, len(data))
+          else:
+              fetch(os.environ["MP4_PAGE"], dest_mp4, b"\x00\x00\x00")
+              fetch(os.environ["GIF_PAGE"], dest_gif, b"GIF")
+          PY
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add awesome-llm-apps/1196/out.mp4 awesome-llm-apps/1196/preview.gif
+          git status
+          git diff --cached --quiet && echo "no binary changes" && exit 0
+          git commit -m "Publish awesome-llm-apps/1196 HyperFrames walkthrough (gif+mp4)"
+          for i in 1 2 3 4 5; do
+            git pull --rebase origin main && git push && break
+            sleep $((i * 3))
+            git rebase --abort || true
+            git pull --rebase origin main || true
+          done
