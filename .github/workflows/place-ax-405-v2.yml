@@ -1,0 +1,46 @@
+name: place-ax-405-v2
+on:
+  push:
+    paths:
+      - ".github/workflows/place-ax-405-v2.yml"
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: place-ax-405-v2
+  cancel-in-progress: true
+jobs:
+  place:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download demo assets, verify, and commit
+        run: |
+          set -euo pipefail
+          fetch() {
+            # $1 = id/name, $2 = destination, $3 = expected sha256
+            local landing="https://tmpfiles.org/dl/$1"
+            local direct
+            direct=$(curl -fsSL -A "Mozilla/5.0" "$landing" | grep -oE "https://tmpfiles.org/dl/[0-9.a-f]+/$1" | head -1)
+            if [ -z "$direct" ]; then direct="$landing"; fi
+            curl -fL --retry 5 --retry-delay 2 -A "Mozilla/5.0" "$direct" -o "$2"
+            echo "$3  $2" | sha256sum -c -
+          }
+          mkdir -p ax/405
+          fetch wLwME71oqMWs/ax-405-preview.gif ax/405/preview.gif dd630c00e0249f222ce6a8fe8fdcb134419a65f8533fdf8657634d0394423a2e
+          fetch wOwXEB1Eqv0f/ax-405-out.mp4 ax/405/out.mp4 f9fc9fa889bacffaeccfead07838bdbd7b4930f5558b54be8fb8e2c200b753fe
+          rm -f .github/workflows/place-ax-405-v2.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add ax/405/preview.gif ax/405/out.mp4
+          git add -u .github/workflows/place-ax-405-v2.yml || true
+          git status
+          git commit -m "Update ax/405 HyperFrames walkthrough for limit validation"
+          for i in 1 2 3 4 5; do
+            if git push origin HEAD:main; then
+              exit 0
+            fi
+            git pull --rebase origin main || true
+            sleep $((i * 2))
+          done
+          exit 1
