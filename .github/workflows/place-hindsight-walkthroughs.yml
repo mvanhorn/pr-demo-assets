@@ -1,0 +1,50 @@
+name: place-hindsight-walkthroughs
+on:
+  push:
+    paths:
+      - ".github/workflows/place-hindsight-walkthroughs.yml"
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: place-hindsight-walkthroughs
+  cancel-in-progress: true
+jobs:
+  place:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download demo assets, verify, and commit
+        run: |
+          set -euo pipefail
+          fetch() {
+            # $1 = landing page, $2 = destination, $3 = expected sha256
+            local direct
+            direct=$(curl -fsSL -A "Mozilla/5.0" "$1" | grep -oE 'https://tmpfiles.org/dl/[^" ]+' | head -1)
+            if [ -z "$direct" ]; then
+              echo "no direct url in $1" >&2
+              exit 1
+            fi
+            curl -fL --retry 5 --retry-delay 2 -A "Mozilla/5.0" "$direct" -o "$2"
+            echo "$3  $2" | sha256sum -c -
+          }
+          mkdir -p hindsight/4725 hindsight/4697
+          fetch "https://tmpfiles.org/w0wnE21l8iFv/4725.gif" hindsight/4725/preview.gif 66ce57b729ec130911e087c48794a6bca516d820d3413a9129112542478c34fb
+          fetch "https://tmpfiles.org/wcwUEw1Z8u2o/4725.mp4" hindsight/4725/out.mp4 006cedaf050ed4a01a2e599f3fd43c05205c7a2b3c2683336669dc0e70e6460f
+          fetch "https://tmpfiles.org/wRwrEX1w8ZGF/4697.gif" hindsight/4697/preview.gif 28615ef1a84cc340fed22702ec78629acae5ac6894cccb4ae70ae2ad83105f71
+          fetch "https://tmpfiles.org/wzwiE61Z8esn/4697.mp4" hindsight/4697/out.mp4 fb18942fcd3a73b123f8ddb11ca4b63a7be1815d0a8c3047558b99021291a12d
+          rm -f .github/workflows/place-hindsight-walkthroughs.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add hindsight/4725/preview.gif hindsight/4725/out.mp4 hindsight/4697/preview.gif hindsight/4697/out.mp4
+          git add -u .github/workflows/place-hindsight-walkthroughs.yml || true
+          git status
+          git commit -m "Add hindsight/4725 and hindsight/4697 HyperFrames walkthroughs"
+          for i in 1 2 3 4 5; do
+            if git push origin HEAD:main; then
+              exit 0
+            fi
+            git pull --rebase origin main || true
+            sleep $((i * 2))
+          done
+          exit 1
