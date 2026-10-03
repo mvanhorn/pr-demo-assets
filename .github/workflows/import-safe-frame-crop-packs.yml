@@ -1,0 +1,36 @@
+name: import-safe-frame-crop-packs
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - ".github/workflows/import-safe-frame-crop-packs.yml"
+jobs:
+  import:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Import binaries onto main
+        run: |
+          set -euo pipefail
+          mkdir -p hyperframes/safe-frame-crop-packs
+          fetch() {
+            local page="$1" dest="$2" needle="$3"
+            local html url
+            html=$(curl -fsSL -A "Mozilla/5.0" "$page")
+            url=$(printf '%s' "$html" | grep -oE "https://tmpfiles.org/dl/[^\"' <>]+${needle}" | head -1)
+            test -n "$url"
+            curl -fsSL -A "Mozilla/5.0" -o "$dest" "$url"
+          }
+          fetch "https://tmpfiles.org/wTARepOi1dJZ/preview.gif" hyperframes/safe-frame-crop-packs/preview.gif "preview.gif"
+          fetch "https://tmpfiles.org/w1ADePOM1d7P/out.mp4" hyperframes/safe-frame-crop-packs/out.mp4 "out.mp4"
+          test "$(wc -c < hyperframes/safe-frame-crop-packs/preview.gif)" -eq 1900469
+          test "$(wc -c < hyperframes/safe-frame-crop-packs/out.mp4)" -eq 1054022
+          file hyperframes/safe-frame-crop-packs/preview.gif | grep -q GIF
+          file hyperframes/safe-frame-crop-packs/out.mp4 | grep -qiE 'ISO Media|MP4|MPEG'
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add hyperframes/safe-frame-crop-packs/preview.gif hyperframes/safe-frame-crop-packs/out.mp4
+          git commit -m "Add HyperFrames safe-frame crop packs GIF and MP4"
+          git push
