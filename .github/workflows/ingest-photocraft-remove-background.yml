@@ -1,0 +1,46 @@
+name: ingest-photocraft-remove-background
+on:
+  push:
+    paths:
+      - ".github/workflows/ingest-photocraft-remove-background.yml"
+  workflow_dispatch:
+
+jobs:
+  ingest:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - name: Fetch rendered demo assets
+        run: |
+          set -euo pipefail
+          mkdir -p photocraft/remove-background
+          curl -fL --retry 5 --retry-delay 2 -o photocraft/remove-background/demo.gif \
+            "https://litter.catbox.moe/nivc3h.gif"
+          curl -fL --retry 5 --retry-delay 2 -o photocraft/remove-background/demo.mp4 \
+            "https://litter.catbox.moe/4bouz4.mp4"
+          test "$(stat -c%s photocraft/remove-background/demo.gif)" -eq 32573693
+          test "$(stat -c%s photocraft/remove-background/demo.mp4)" -eq 7324777
+          python3 - <<'PY'
+          import hashlib, pathlib
+          files = {
+            "photocraft/remove-background/demo.gif": "2350c374f91f178eb0e9aed47cfc0dd86582fbb6453c10a30d27f2432fe01cb1",
+            "photocraft/remove-background/demo.mp4": "046039222f338cac7bf2912203c258bd695f7534f7530142d2d954a5b8b4ec84",
+          }
+          for path, expected in files.items():
+            digest = hashlib.sha256(pathlib.Path(path).read_bytes()).hexdigest()
+            assert digest == expected, (path, digest, expected)
+            print(path, digest)
+          PY
+      - name: Commit assets and remove ingest workflow
+        run: |
+          set -euo pipefail
+          git config user.name "Matt Van Horn"
+          git config user.email "mvanhorn@users.noreply.github.com"
+          git rm -f .github/workflows/ingest-photocraft-remove-background.yml
+          git add photocraft/remove-background/demo.gif photocraft/remove-background/demo.mp4
+          git commit --author="Matt Van Horn <mvanhorn@users.noreply.github.com>" -m "Add photocraft Remove Background walkthrough GIF and MP4"
+          git push
