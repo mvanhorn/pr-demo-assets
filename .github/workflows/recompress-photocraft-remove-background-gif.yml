@@ -1,0 +1,35 @@
+name: recompress-photocraft-remove-background-gif
+on:
+  push:
+    paths:
+      - ".github/workflows/recompress-photocraft-remove-background-gif.yml"
+  workflow_dispatch:
+
+jobs:
+  recompress:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install ffmpeg
+        run: sudo apt-get update && sudo apt-get install -y ffmpeg
+      - name: Re-encode demo.gif under 8MB
+        run: |
+          set -euo pipefail
+          ffmpeg -y -i photocraft/remove-background/demo.mp4 \
+            -vf "fps=12,scale=720:-1:flags=lanczos,split[s0][s1];[s0]palettegen=max_colors=128:stats_mode=diff[p];[s1][p]paletteuse=dither=bayer:bayer_scale=5:diff_mode=rectangle" \
+            photocraft/remove-background/demo.gif
+          bytes=$(stat -c%s photocraft/remove-background/demo.gif)
+          echo "gif bytes=$bytes"
+          test "$bytes" -lt 8000000
+          test "$bytes" -gt 100000
+      - name: Commit GIF and remove workflow
+        run: |
+          set -euo pipefail
+          git config user.name "Matt Van Horn"
+          git config user.email "mvanhorn@users.noreply.github.com"
+          git rm -f .github/workflows/recompress-photocraft-remove-background-gif.yml
+          git add photocraft/remove-background/demo.gif
+          git commit --author="Matt Van Horn <mvanhorn@users.noreply.github.com>" -m "Recompress photocraft Remove Background demo.gif under 8MB"
+          git push
