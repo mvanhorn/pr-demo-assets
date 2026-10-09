@@ -1,0 +1,22 @@
+   assert gif.stat().st_size < 8_000_000, gif.stat().st_size
+
+    DEST.mkdir(parents=True, exist_ok=True)
+    shutil.copyfile(gif, DEST / "demo.gif")
+    shutil.copyfile(mp4, DEST / "demo.mp4")
+    for name in mapping.values():
+        shutil.copyfile(ROOT / name, DEST / name)
+
+    os.environ.copy()
+    run(["git", "config", "user.name", "Matt Van Horn"])
+    run(["git", "config", "user.email", "mvanhorn@users.noreply.github.com"])
+    subprocess.call(["git", "rm", "-rf", "--ignore-unmatch", str(ROOT)])
+    subprocess.call(
+        ["git", "rm", "-f", ".github/workflows/ingest-diagram-design-plantuml-import.yml"]
+    )
+    run(
+        [
+            "git",
+            "add",
+            "diagram-design/plantuml-import/demo.gif",
+            "diagram-design/plantuml-import/demo.mp4",
+            "diagram-design/plantuml-import/import-plantuml-source-sequence.pn
