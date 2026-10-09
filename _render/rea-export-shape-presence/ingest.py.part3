@@ -1,0 +1,30 @@
+ = needle.replace("s", "")
+            run(
+                [
+                    "ffmpeg",
+                    "-y",
+                    "-ss",
+                    ss,
+                    "-i",
+                    "out.mp4",
+                    "-update",
+                    "1",
+                    "-frames:v",
+                    "1",
+                    dest_name,
+                ],
+                cwd=ROOT,
+            )
+        assert dest.is_file() and dest.stat().st_size > 0, dest_name
+
+    gif = ROOT / "preview.gif"
+    mp4 = ROOT / "out.mp4"
+    assert mp4.stat().st_size > 0
+    assert gif.stat().st_size > 0
+    assert gif.stat().st_size < 8_000_000, gif.stat().st_size
+
+    DEST.mkdir(parents=True, exist_ok=True)
+    shutil.copyfile(gif, DEST / "demo.gif")
+    shutil.copyfile(mp4, DEST / "demo.mp4")
+    for name in mapping.values():
+        shutil.co
