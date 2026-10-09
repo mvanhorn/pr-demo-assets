@@ -1,0 +1,19 @@
+pyfile(ROOT / name, DEST / name)
+
+    env = os.environ.copy()
+    env["GIT_AUTHOR_NAME"] = "Matt Van Horn"
+    env["GIT_AUTHOR_EMAIL"] = "mvanhorn@users.noreply.github.com"
+    env["GIT_COMMITTER_NAME"] = "Matt Van Horn"
+    env["GIT_COMMITTER_EMAIL"] = "mvanhorn@users.noreply.github.com"
+    run(["git", "config", "user.name", "Matt Van Horn"])
+    run(["git", "config", "user.email", "mvanhorn@users.noreply.github.com"])
+    subprocess.call(["git", "rm", "-rf", "--ignore-unmatch", str(ROOT)])
+    subprocess.call(["git", "rm", "-f", ".github/workflows/ingest-rea-export-shape-presence.yml"])
+    run(
+        [
+            "git",
+            "add",
+            "rea/export-shape-presence/demo.gif",
+            "rea/export-shape-presence/demo.mp4",
+            "rea/export-shape-presence/screenshot_export_shape_sources.png",
+            "rea/export-shape-presence/sc
