@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 from pathlib import Path
-import base64, gzip, hashlib, shutil, subprocess, sys, time
+import base64, gzip, hashlib, os, shutil, subprocess, sys, time
 
 ROOT = Path("_render/photocraft-rotate-view")
 DEST = Path("photocraft/rotate-view")
@@ -156,12 +156,29 @@ def main():
             "Add photocraft Rotate View walkthrough GIF, MP4, and screenshots",
         ]
     )
-    for i in range(1, 6):
+    for i in range(1, 8):
         try:
-            run(["git", "pull", "--rebase", "origin", "main"])
+            run(["git", "fetch", "origin", "main"])
+            merged = subprocess.call(["git", "merge", "--no-edit", "origin/main"])
+            if merged != 0:
+                subprocess.call(["git", "rm", "-rf", "--ignore-unmatch", "_render/photocraft-rotate-view"])
+                subprocess.call(
+                    [
+                        "git",
+                        "rm",
+                        "-f",
+                        "--ignore-unmatch",
+                        ".github/workflows/ingest-photocraft-rotate-view.yml",
+                    ]
+                )
+                subprocess.call(["git", "add", "-A", "photocraft/rotate-view"])
+                env = os.environ.copy()
+                env["GIT_EDITOR"] = "true"
+                subprocess.check_call(["git", "-c", "core.editor=true", "commit", "--no-edit"], env=env)
             run(["git", "push", "origin", "HEAD:main"])
             return
         except subprocess.CalledProcessError:
+            subprocess.call(["git", "merge", "--abort"])
             subprocess.call(["git", "rebase", "--abort"])
             time.sleep(i * 3)
     raise SystemExit("push failed")
