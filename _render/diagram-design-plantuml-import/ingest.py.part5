@@ -1,0 +1,22 @@
+g",
+            "diagram-design/plantuml-import/import-plantuml-sequence-light.png",
+            "diagram-design/plantuml-import/import-plantuml-sequence-dark.png",
+            "diagram-design/plantuml-import/import-plantuml-sequence-full.png",
+            "diagram-design/plantuml-import/import-plantuml-source-class.png",
+            "diagram-design/plantuml-import/import-plantuml-class-light.png",
+            "diagram-design/plantuml-import/import-plantuml-class-dark.png",
+            "diagram-design/plantuml-import/import-plantuml-class-full.png",
+        ]
+    )
+    run(
+        [
+            "git",
+            "commit",
+            "--author=Matt Van Horn <mvanhorn@users.noreply.github.com>",
+            "-m",
+            "Add diagram-design PlantUML import walkthrough GIF, MP4, and screenshots",
+        ]
+    )
+    for i in range(1, 6):
+        try:
+     
