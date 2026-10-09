@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
 from pathlib import Path
+import base64
+import gzip
+import hashlib
 import os
 import shutil
 import subprocess
@@ -10,6 +13,7 @@ DEST = Path("holmesgpt/doctor-cli")
 HF = "hyperframes@0.8.143"
 MAX_GIF = 8_000_000
 WORKFLOW = ".github/workflows/ingest-holmesgpt-doctor-cli.yml"
+HTML_SHA = "644e69ca9439ff78d5799ff44e9bb45e38f903e6cf30b8ae0fc728db11309b10"
 
 
 def run(cmd, cwd=None, env=None):
@@ -17,11 +21,22 @@ def run(cmd, cwd=None, env=None):
     subprocess.check_call(cmd, cwd=str(cwd) if cwd else None, env=env)
 
 
-def main():
-    DEST.mkdir(parents=True, exist_ok=True)
-    html = (ROOT / "index.html").read_bytes()
+def decode_html():
+    b64 = "".join((ROOT / ("html.b64.%d" % i)).read_text() for i in range(4))
+    b64 += "=" * ((4 - len(b64) % 4) % 4)
+    html = gzip.decompress(base64.b64decode(b64))
+    digest = hashlib.sha256(html).hexdigest()
+    if digest != HTML_SHA:
+        raise SystemExit("html sha256 %s != %s" % (digest, HTML_SHA))
     if b"cdn.jsdelivr.net/fontsource/fonts" not in html:
         raise SystemExit("index.html is missing font CDN urls")
+    (ROOT / "index.html").write_bytes(html)
+    print("html", len(html), digest, flush=True)
+
+
+def main():
+    DEST.mkdir(parents=True, exist_ok=True)
+    decode_html()
 
     run(["npx", "--yes", HF, "browser", "ensure"], cwd=ROOT)
     run(
