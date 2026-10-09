@@ -13,8 +13,8 @@ def load(prefix, n, raw_len, digest):
     assert hashlib.sha256(data).hexdigest() == digest, prefix
     return data
 
-gif = load("gif", 4, 1688120, "3401849f44dc055ede9ba8ca8c0bccc60f1b836d48ffdb131c8f827768d3ae14")
-mp4 = load("mp4", 7, 3496903, "a58b2d400a547eea7df9e51b04670130874d89df0fcf20627b80a5b904b41e07")
+gif = load("gif", 26, 1688120, "3401849f44dc055ede9ba8ca8c0bccc60f1b836d48ffdb131c8f827768d3ae14")
+mp4 = load("mp4", 52, 3496903, "a58b2d400a547eea7df9e51b04670130874d89df0fcf20627b80a5b904b41e07")
 (out / "demo.gif").write_bytes(gif)
 (out / "demo.mp4").write_bytes(mp4)
 
