@@ -15,25 +15,37 @@ EXPECTED.update({("mp4", i): 90000 for i in range(37)})
 EXPECTED[("mp4", 37)] = 7216
 
 
+def read_node(stem):
+    children = []
+    n = 0
+    while True:
+        child = f"{stem}.{n}"
+        child_path = p / child
+        has_kids = (p / f"{child}.0").exists()
+        if has_kids:
+            body = read_node(child)
+            if body is None:
+                break
+            children.append(body)
+            n += 1
+        elif child_path.exists():
+            children.append("".join(child_path.read_text().split()))
+            n += 1
+        else:
+            break
+    if children:
+        return "".join(children)
+    fp = p / stem
+    if fp.exists():
+        return "".join(fp.read_text().split())
+    return None
+
+
 def chunk_body(prefix, i):
     want = EXPECTED[(prefix, i)]
-    parts = []
-    j = 0
-    while True:
-        fp = p / f"{prefix}.{i}.{j}"
-        if not fp.exists():
-            break
-        parts.append(fp.read_text())
-        j += 1
-    if parts:
-        joined = "".join("".join(x.split()) for x in parts)
-        if len(joined) == want:
-            return joined
-    fp = p / f"{prefix}.{i}"
-    if fp.exists():
-        stripped = "".join(fp.read_text().split())
-        if len(stripped) == want:
-            return stripped
+    body = read_node(f"{prefix}.{i}")
+    if body is not None and len(body) == want:
+        return body
     return None
 
 
