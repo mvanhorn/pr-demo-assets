@@ -1,0 +1,5 @@
+{
+  "name": "opentpu-smi-watch",
+  "private": true,
+  "type": "module"
+}
