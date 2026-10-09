@@ -31,6 +31,6 @@ jobs:
           set -euo pipefail
           sudo apt-get update
           sudo apt-get install -y ffmpeg
-      - name: Decode and render
+          python3 -m pip install --quiet pillow
+      - name: Decode, generate, render
         run: python3 _render/photocraft-rotate-view/boot.py
-# retrigger after merge-conflict fix
