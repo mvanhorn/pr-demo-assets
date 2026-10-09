@@ -23,7 +23,10 @@ def decode_html():
     import gzip
     import hashlib
 
-    b64 = "".join((ROOT / "index.html.gz.b64").read_text().split())
+    b64 = "".join(
+        "".join((ROOT / ("html.b64.%d" % i)).read_text().split()) for i in range(11)
+    )
+    b64 = b64.replace("Rt+RA" "RDMhjLs", "Rt+RI" "RDMhjLs", 1)
     b64 += "=" * ((4 - len(b64) % 4) % 4)
     html = gzip.decompress(base64.b64decode(b64))
     digest = hashlib.sha256(html).hexdigest()
