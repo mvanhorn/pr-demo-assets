@@ -1,0 +1,32 @@
+
+    )
+    run(
+        [
+            "npx",
+            "--yes",
+            "hyperframes@0.8.143",
+            "snapshot",
+            "--at",
+            "4,13,22,31.5",
+            "--no-end",
+            "--timeout",
+            "60000",
+            "--output",
+            "snapshots",
+        ],
+        cwd=ROOT,
+    )
+    mapping = {
+        "4s": "inspect-analysis-view-01-large-result.png",
+        "13s": "inspect-analysis-view-02-summary.png",
+        "22s": "inspect-analysis-view-03-one-module.png",
+        "31.5s": "inspect-analysis-view-04-page.png",
+    }
+    snaps = ROOT / "snapshots"
+    for needle, dest_name in mapping.items():
+        src = pick_snapshot(snaps, needle)
+        dest = ROOT / dest_name
+        if src:
+            shutil.copyfile(src, dest)
+        if not dest.is_file() or dest.stat().st_size == 0:
+            ss = needle.replace
