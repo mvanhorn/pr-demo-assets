@@ -1,0 +1,13 @@
+       run(["git", "pull", "--rebase", "origin", "main"])
+            run(["git", "push", "origin", "HEAD:main"])
+            return
+        except subprocess.CalledProcessError:
+            subprocess.call(["git", "rebase", "--abort"])
+            import time
+
+            time.sleep(i * 3)
+    raise SystemExit("push failed")
+
+
+if __name__ == "__main__":
+    main()
