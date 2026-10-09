@@ -1,0 +1,11 @@
+{
+  "name": "holmesgpt-toolset-inspect",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "npx --yes hyperframes@latest preview",
+    "check": "npx --yes hyperframes@latest check",
+    "render": "npx --yes hyperframes@latest render",
+    "publish": "npx --yes hyperframes@latest publish"
+  }
+}
