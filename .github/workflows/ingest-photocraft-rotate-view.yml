@@ -3,7 +3,6 @@ on:
   push:
     paths:
       - ".github/workflows/ingest-photocraft-rotate-view.yml"
-      - "_render/photocraft-rotate-view/**"
   workflow_dispatch:
 
 jobs:
