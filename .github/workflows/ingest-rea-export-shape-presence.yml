@@ -1,0 +1,19 @@
+name: ingest-rea-export-shape-presence
+on:
+  push:
+    paths:
+      - .github/workflows/ingest-rea-export-shape-presence.yml
+  workflow_dispatch:
+jobs:
+  ingest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: sudo apt-get update && sudo apt-get install -y ffmpeg
+      - run: python3 _render/rea-export-shape-presence/boot.py
