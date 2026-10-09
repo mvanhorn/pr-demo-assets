@@ -10,11 +10,35 @@ out = Path("ladybug/list-min-max")
 out.mkdir(parents=True, exist_ok=True)
 
 
+def chunk_body(prefix, i):
+    parts = []
+    j = 0
+    while True:
+        fp = p / f"{prefix}.{i}.{j}"
+        if not fp.exists():
+            break
+        parts.append(fp.read_text())
+        j += 1
+    if parts:
+        return "".join(parts)
+    fp = p / f"{prefix}.{i}"
+    if not fp.exists():
+        return None
+    return fp.read_text()
+
+
 def load(prefix, n, raw_len, digest):
-    missing = [f"{prefix}.{i}" for i in range(n) if not (p / f"{prefix}.{i}").exists()]
+    texts = []
+    missing = []
+    for i in range(n):
+        body = chunk_body(prefix, i)
+        if body is None:
+            missing.append(f"{prefix}.{i}")
+            continue
+        texts.append("".join(body.split()))
     if missing:
         raise SystemExit("missing chunks: " + ", ".join(missing[:12]))
-    b64 = "".join("".join((p / f"{prefix}.{i}").read_text().split()) for i in range(n))
+    b64 = "".join(texts)
     pad = (4 - len(b64) % 4) % 4
     data = base64.b64decode(b64 + "=" * pad)
     if len(data) != raw_len:
