@@ -4,13 +4,51 @@ import hashlib
 import os
 import subprocess
 import time
+import urllib.request
 
 p = Path("_render/ladybug-list-min-max")
 out = Path("ladybug/list-min-max")
 out.mkdir(parents=True, exist_ok=True)
 
+EXPECTED = {("gif", i): 90000 for i in range(17)}
+EXPECTED[("gif", 17)] = 64628
+EXPECTED.update({("mp4", i): 90000 for i in range(37)})
+EXPECTED[("mp4", 37)] = 7216
+
+FETCH = {
+    "mp4.0": "https://litter.catbox.moe/oqzpqc.0",
+    "mp4.1": "https://litter.catbox.moe/wndqby.1",
+    "mp4.2": "https://litter.catbox.moe/7n1dmy.2",
+    "mp4.3": "https://litter.catbox.moe/dc3zwt.3",
+    "mp4.4": "https://litter.catbox.moe/6s77uk.4",
+    "mp4.5": "https://litter.catbox.moe/mcy5ad.5",
+    "mp4.6": "https://litter.catbox.moe/zdi93c.6",
+    "mp4.7": "https://litter.catbox.moe/m62t2m.7",
+    "mp4.8": "https://litter.catbox.moe/p356qy.8",
+    "mp4.9": "https://litter.catbox.moe/64a07r.9",
+    "mp4.10": "https://litter.catbox.moe/7h9ecl.10",
+    "mp4.11": "https://litter.catbox.moe/shuysa.11",
+    "mp4.12": "https://litter.catbox.moe/v75bhc.12",
+}
+
+UA = {"User-Agent": "ladybug-ingest/1.0"}
+
+
+def http_get(url):
+    req = urllib.request.Request(url, headers=UA)
+    with urllib.request.urlopen(req, timeout=60) as resp:
+        return resp.read().decode("ascii")
+
+
+def resolve_text(text):
+    t = text.strip()
+    if t.startswith("http://") or t.startswith("https://"):
+        t = http_get(t.split()[0])
+    return "".join(t.split())
+
 
 def chunk_body(prefix, i):
+    want = EXPECTED.get((prefix, i))
     parts = []
     j = 0
     while True:
@@ -20,11 +58,22 @@ def chunk_body(prefix, i):
         parts.append(fp.read_text())
         j += 1
     if parts:
-        return "".join(parts)
+        joined = "".join(resolve_text(x) for x in parts)
+        if not want or len(joined) == want:
+            return joined
     fp = p / f"{prefix}.{i}"
-    if not fp.exists():
-        return None
-    return fp.read_text()
+    name = f"{prefix}.{i}"
+    body = fp.read_text() if fp.exists() else ""
+    stripped = resolve_text(body) if body else ""
+    if want and len(stripped) == want:
+        return stripped
+    if name in FETCH:
+        got = "".join(http_get(FETCH[name]).split())
+        if not want or len(got) == want:
+            return got
+    if stripped:
+        return stripped
+    return None
 
 
 def load(prefix, n, raw_len, digest):
