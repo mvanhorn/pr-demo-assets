@@ -1,0 +1,34 @@
+,
+        ],
+        cwd=ROOT,
+    )
+    run(
+        [
+            "npx",
+            "--yes",
+            "hyperframes@0.8.143",
+            "snapshot",
+            "--at",
+            "15.2,25.2,27.5,30.5,33.6",
+            "--no-end",
+            "--timeout",
+            "60000",
+            "--output",
+            "snapshots",
+        ],
+        cwd=ROOT,
+    )
+    mapping = {
+        "15.2s": "service-blueprint-light.png",
+        "25.2s": "service-blueprint-canonical.png",
+        "27.5s": "service-blueprint-dark.png",
+        "30.5s": "service-blueprint-full.png",
+        "33.6s": "service-blueprint-gallery.png",
+    }
+    snaps = ROOT / "snapshots"
+    for needle, dest_name in mapping.items():
+        src = pick_snapshot(snaps, needle)
+        dest = ROOT / dest_name
+        if src:
+            shutil.copyfile(src, dest)
+        if not dest.is_file() 

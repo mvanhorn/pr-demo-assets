@@ -1,0 +1,35 @@
+n None
+    for name in sorted(snapshots.iterdir()):
+        if needle in name.name:
+            return name
+    return None
+
+
+def main():
+    decode_html()
+    run(["npx", "--yes", "hyperframes@0.8.143", "browser", "ensure"], cwd=ROOT)
+    run(
+        [
+            "npx",
+            "--yes",
+            "hyperframes@0.8.143",
+            "render",
+            "--format",
+            "mp4",
+            "--output",
+            "out.mp4",
+            "--workers",
+            "1",
+            "--no-browser-gpu",
+        ],
+        cwd=ROOT,
+    )
+    run(
+        [
+            "ffmpeg",
+            "-y",
+            "-i",
+            "out.mp4",
+            "-vf",
+            "fps=12,scale=720:-1:flags=lanczos,split[s0][s1];[s0]palettegen=max_colors=128:stats_mode=diff[p];[s1][p]paletteuse=dither=bayer:bayer_scale=5:diff_mode=rectangle",
+            "preview.gif"
