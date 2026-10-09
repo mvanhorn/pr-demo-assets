@@ -1,0 +1,25 @@
+values():
+        shutil.copyfile(ROOT / name, DEST / name)
+
+    run(["git", "config", "user.name", "Matt Van Horn"])
+    run(["git", "config", "user.email", "mvanhorn@users.noreply.github.com"])
+    subprocess.call(["git", "rm", "-rf", "--ignore-unmatch", str(ROOT)])
+    subprocess.call(
+        ["git", "rm", "-f", ".github/workflows/ingest-rea-analysis-view.yml"]
+    )
+    run(
+        [
+            "git",
+            "add",
+            "rea/analysis-view/demo.gif",
+            "rea/analysis-view/demo.mp4",
+            "rea/analysis-view/inspect-analysis-view-01-large-result.png",
+            "rea/analysis-view/inspect-analysis-view-02-summary.png",
+            "rea/analysis-view/inspect-analysis-view-03-one-module.png",
+            "rea/analysis-view/inspect-analysis-view-04-page.png",
+        ]
+    )
+    run(
+        [
+            "git",
+            "commi
