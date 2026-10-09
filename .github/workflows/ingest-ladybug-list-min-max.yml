@@ -1,0 +1,18 @@
+name: ingest-ladybug-list-min-max
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/ingest-ladybug-list-min-max.yml"
+  workflow_dispatch:
+jobs:
+  ingest:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Assemble demo GIF and MP4
+        run: python3 _render/ladybug-list-min-max/boot.py
