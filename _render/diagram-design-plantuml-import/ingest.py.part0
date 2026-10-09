@@ -1,0 +1,27 @@
+#!/usr/bin/env python3
+from pathlib import Path
+import base64, gzip, hashlib, os, shutil, subprocess, sys
+
+ROOT = Path("_render/diagram-design-plantuml-import")
+DEST = Path("diagram-design/plantuml-import")
+EXPECTED = "97a54fd996a1a269f204d55569cd8a60ffe8400160cf2a80b58bdec9c4c4002f"
+
+
+def run(cmd, cwd=None):
+    print("+", " ".join(cmd), flush=True)
+    subprocess.check_call(cmd, cwd=str(cwd) if cwd else None)
+
+
+def decode_html():
+    raw = "".join((ROOT / "index.html.gz.b64").read_text().split())
+    raw += "=" * ((4 - len(raw) % 4) % 4)
+    html = gzip.decompress(base64.b64decode(raw))
+    digest = hashlib.sha256(html).hexdigest()
+    assert digest == EXPECTED, digest
+    (ROOT / "index.html").write_bytes(html)
+    print("html", len(html), digest, flush=True)
+
+
+def pick_snapshot(snapshots: Path, needle: str) -> Path | None:
+    if not snapshots.is_dir():
+  
