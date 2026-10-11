@@ -1,0 +1,483 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1920, height=1080" />
+    <title>npm run check</title>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <style>
+      @font-face {
+        font-family: "EB Garamond";
+        src: url("assets/fonts/EBGaramond-400.woff2") format("woff2");
+        font-weight: 400;
+        font-style: normal;
+        font-display: block;
+      }
+      @font-face {
+        font-family: "Inter";
+        src: url("assets/fonts/Inter-400.woff2") format("woff2");
+        font-weight: 400;
+        font-style: normal;
+        font-display: block;
+      }
+      @font-face {
+        font-family: "Inter";
+        src: url("assets/fonts/Inter-700.woff2") format("woff2");
+        font-weight: 700;
+        font-style: normal;
+        font-display: block;
+      }
+      @font-face {
+        font-family: "JetBrains Mono";
+        src: url("assets/fonts/JetBrainsMono-400.woff2") format("woff2");
+        font-weight: 400;
+        font-style: normal;
+        font-display: block;
+      }
+      @font-face {
+        font-family: "JetBrains Mono";
+        src: url("assets/fonts/JetBrainsMono-700.woff2") format("woff2");
+        font-weight: 700;
+        font-style: normal;
+        font-display: block;
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        margin: 0;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        background: #faf9f5;
+      }
+      #root {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        background: #faf9f5;
+        color: #141413;
+        container-type: size;
+        container-name: frame;
+      }
+      .clip {
+        position: absolute;
+        inset: 0;
+      }
+      .inner {
+        width: 100%;
+        height: 100%;
+        box-sizing: border-box;
+        padding: 4.2cqw 4.6cqw 3.2cqw;
+        display: flex;
+        flex-direction: column;
+        opacity: 0;
+      }
+
+      .kicker {
+        font-family: "JetBrains Mono", ui-monospace, monospace;
+        font-size: 1.46cqw;
+        font-weight: 400;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: #141413;
+        display: flex;
+        align-items: center;
+        gap: 0.7cqw;
+        margin-bottom: 1.2cqw;
+      }
+      .spike {
+        display: inline-block;
+        width: 1.2em;
+        color: #cc785c;
+        font-size: 1.15em;
+        line-height: 1;
+      }
+      .index {
+        margin-left: auto;
+        letter-spacing: 0.08em;
+        color: color-mix(in srgb, #141413 55%, #faf9f5);
+        text-transform: none;
+        font-size: 1.2cqw;
+      }
+
+      .display {
+        font-family: "EB Garamond", Georgia, serif;
+        font-weight: 400;
+        font-size: 8.6cqw;
+        line-height: 0.98;
+        letter-spacing: -0.028em;
+        color: #141413;
+        max-width: 78cqw;
+      }
+      .lead {
+        font-family: "Inter", ui-sans-serif, sans-serif;
+        font-weight: 400;
+        font-size: 2.08cqw;
+        line-height: 1.45;
+        color: color-mix(in srgb, #141413 78%, #faf9f5);
+        margin-top: 1.6cqw;
+        max-width: 70cqw;
+      }
+      .cover-meta {
+        margin-top: 3.2cqw;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1.6cqw 2.4cqw;
+        font-family: "JetBrains Mono", ui-monospace, monospace;
+        font-size: 1.35cqw;
+        color: color-mix(in srgb, #141413 62%, #faf9f5);
+      }
+      .cover-meta b {
+        font-weight: 700;
+        color: #141413;
+      }
+
+      .term {
+        flex: 1;
+        min-height: 0;
+        display: flex;
+        flex-direction: column;
+        background: #181715;
+        color: #faf9f5;
+        border: 1px solid color-mix(in srgb, #faf9f5 14%, transparent);
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 1px 3px color-mix(in srgb, #141413 8%, transparent),
+          0 4px 16px color-mix(in srgb, #141413 4%, transparent);
+      }
+      .term-bar {
+        flex: 0 0 auto;
+        display: flex;
+        align-items: center;
+        gap: 1cqw;
+        padding: 0.85cqw 1.4cqw;
+        background: #252320;
+        border-bottom: 1px solid color-mix(in srgb, #faf9f5 14%, transparent);
+        font-family: "JetBrains Mono", ui-monospace, monospace;
+        font-size: 1.25cqw;
+        color: color-mix(in srgb, #faf9f5 72%, #181715);
+      }
+      .term-bar .fname {
+        color: #faf9f5;
+      }
+      .term-body {
+        flex: 1;
+        min-height: 0;
+        padding: 1.3cqw 1.6cqw 1.1cqw;
+        font-family: "JetBrains Mono", ui-monospace, monospace;
+        font-size: 1.48cqw;
+        line-height: 1.45;
+        overflow: hidden;
+      }
+      .prompt {
+        display: flex;
+        gap: 0.7cqw;
+        margin-bottom: 0.7cqw;
+        white-space: pre-wrap;
+      }
+      .ps {
+        color: #5db8a6;
+        flex: 0 0 auto;
+      }
+      .type .ch {
+        display: inline;
+        opacity: 0;
+      }
+      .pre {
+        white-space: pre-wrap;
+      }
+      .reveal {
+        opacity: 0;
+      }
+      .ln {
+        opacity: 0;
+        white-space: pre-wrap;
+      }
+      .gap {
+        height: 0.55cqw;
+      }
+      .dim {
+        color: color-mix(in srgb, #faf9f5 58%, #181715);
+      }
+      .ok {
+        color: #5db872;
+      }
+      .fail {
+        color: #e06a6a;
+      }
+      .hl {
+        color: #cc785c;
+      }
+      .ln.mark,
+      .prompt.mark {
+        background: color-mix(in srgb, #cc785c 12%, transparent);
+        margin: 0.15cqw -0.5cqw;
+        padding: 0.2cqw 0.5cqw;
+        border-left: 3px solid #cc785c;
+      }
+      .ln.mark.ok {
+        background: color-mix(in srgb, #5db872 12%, transparent);
+        border-left-color: #5db872;
+      }
+      .ln.mark.fail {
+        background: color-mix(in srgb, #e06a6a 12%, transparent);
+        border-left-color: #e06a6a;
+      }
+
+      .caption-stage {
+        flex: 0 0 auto;
+        display: flex;
+        justify-content: center;
+        padding-top: 1.6cqw;
+      }
+      .caption-pill {
+        max-width: 82%;
+        padding: 1.05cqw 2.1cqw 1.15cqw;
+        background: #faf9f5;
+        border: 1px solid color-mix(in srgb, #141413 12%, transparent);
+        border-radius: 12px;
+        box-shadow: 0 1px 3px color-mix(in srgb, #141413 8%, transparent),
+          0 4px 16px color-mix(in srgb, #141413 4%, transparent);
+      }
+      .caption-line {
+        font-family: "EB Garamond", Georgia, serif;
+        font-weight: 400;
+        font-size: 2.4cqw;
+        line-height: 1.24;
+        letter-spacing: -0.02em;
+        color: #141413;
+        text-align: center;
+      }
+      .cover .caption-stage {
+        margin-top: auto;
+      }
+    </style>
+  </head>
+  <body>
+    <div
+      id="root"
+      data-composition-id="main"
+      data-start="0"
+      data-duration="32.5"
+      data-width="1920"
+      data-height="1080"
+    >
+      <section id="s0" class="clip" data-start="0" data-duration="3.5" data-track-index="0">
+        <div class="inner cover">
+          <div class="kicker">
+            <span class="spike" id="sp0">✱</span>
+            <span>mattpocock/skills</span>
+            <span class="index">fix/catalog-check · bc9af99</span>
+          </div>
+          <h1 class="display">npm run check</h1>
+          <p class="lead">Plugin, READMEs, docs, front matter, and prose stay in sync.</p>
+          <div class="cover-meta">
+            <span><b>plugin.json</b> listed</span>
+            <span><b>READMEs</b> linked</span>
+            <span><b>docs</b> page present</span>
+            <span><b>front matter</b> valid</span>
+            <span><b>prose</b> no em-dashes</span>
+          </div>
+          <div class="caption-stage">
+            <div class="caption-pill">
+              <div class="caption-line">This branch adds npm run check.</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="s1" class="clip" data-start="3.5" data-duration="8.5" data-track-index="0">
+        <div class="inner">
+          <div class="kicker">
+            <span class="spike">✱</span>
+            <span>pass</span>
+            <span class="index">npm run check</span>
+          </div>
+          <div class="term" id="s1p">
+            <div class="term-bar"><span class="fname">zsh</span> · mattpocock-skills · fix/catalog-check</div>
+            <div class="term-body">
+              <div class="prompt">
+                <span class="ps">$</span>
+                <span>cd mattpocock-skills</span>
+              </div>
+              <div class="prompt">
+                <span class="ps">$</span>
+                <span>git log -1 --oneline</span>
+              </div>
+              <div class="pre">bc9af99 check: catch a promoted skill missing from the plugin, READMEs, or docs</div>
+              <div class="gap"></div>
+              <div class="prompt">
+                <span class="ps">$</span>
+                <span class="type">npm run check</span>
+              </div>
+              <div class="ln dim">&gt; mattpocock-skills@1.3.1 check</div>
+              <div class="ln dim">&gt; npm run check-plugin-version &amp;&amp; node scripts/check-catalog.mjs</div>
+              <div class="ln gap"></div>
+              <div class="ln dim">&gt; mattpocock-skills@1.3.1 check-plugin-version</div>
+              <div class="ln dim">&gt; node scripts/sync-plugin-version.mjs --check</div>
+              <div class="ln gap"></div>
+              <div class="ln">plugin.json version is 1.3.1 (already in sync)</div>
+              <div class="ln ok mark">check-catalog: 27 promoted skills, plugin.json, READMEs, docs, front matter, invocation flags, ask-matt, and prose (no em-dashes) are in sync</div>
+            </div>
+          </div>
+          <div class="caption-stage">
+            <div class="caption-pill">
+              <div class="caption-line">27 promoted skills are in sync.</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="s2" class="clip" data-start="12.0" data-duration="8.0" data-track-index="0">
+        <div class="inner">
+          <div class="kicker">
+            <span class="spike">✱</span>
+            <span>missing docs</span>
+            <span class="index">wait-what</span>
+          </div>
+          <div class="term" id="s2p">
+            <div class="term-bar"><span class="fname">zsh</span> · hide a promoted docs page</div>
+            <div class="term-body">
+              <div class="prompt">
+                <span class="ps">$</span>
+                <span class="type">mv docs/productivity/wait-what.md /tmp/</span>
+              </div>
+              <div class="prompt reveal" id="s2cmd2">
+                <span class="ps">$</span>
+                <span>npm run check-catalog</span>
+              </div>
+              <div class="ln dim">&gt; mattpocock-skills@1.3.1 check-catalog</div>
+              <div class="ln dim">&gt; node scripts/check-catalog.mjs</div>
+              <div class="ln gap"></div>
+              <div class="ln fail mark">docs/productivity/wait-what.md: missing docs page for promoted skill wait-what</div>
+              <div class="ln fail">check-catalog: 1 problem(s)</div>
+              <div class="ln dim">exit: 1</div>
+            </div>
+          </div>
+          <div class="caption-stage">
+            <div class="caption-pill">
+              <div class="caption-line">Hide a docs page and the catalog check fails.</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="s3" class="clip" data-start="20.0" data-duration="6.5" data-track-index="0">
+        <div class="inner">
+          <div class="kicker">
+            <span class="spike">✱</span>
+            <span>prose</span>
+            <span class="index">after an em-dash in wait-what.md</span>
+          </div>
+          <div class="term" id="s3p">
+            <div class="term-bar"><span class="fname">zsh</span> · catalog check</div>
+            <div class="term-body">
+              <div class="prompt">
+                <span class="ps">$</span>
+                <span class="type">npm run check-catalog</span>
+              </div>
+              <div class="ln dim">&gt; mattpocock-skills@1.3.1 check-catalog</div>
+              <div class="ln dim">&gt; node scripts/check-catalog.mjs</div>
+              <div class="ln gap"></div>
+              <div class="ln fail mark">docs/productivity/wait-what.md:1: em-dash (U+2014) is forbidden in repo prose</div>
+              <div class="ln fail">check-catalog: 1 problem(s)</div>
+              <div class="ln dim">exit: 1</div>
+            </div>
+          </div>
+          <div class="caption-stage">
+            <div class="caption-pill">
+              <div class="caption-line">An em-dash in prose fails the same check.</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="s4" class="clip" data-start="26.5" data-duration="6.0" data-track-index="0">
+        <div class="inner">
+          <div class="kicker">
+            <span class="spike">✱</span>
+            <span>restore</span>
+            <span class="index">npm run check</span>
+          </div>
+          <div class="term" id="s4p">
+            <div class="term-bar"><span class="fname">zsh</span> · mattpocock-skills · clean tree</div>
+            <div class="term-body">
+              <div class="prompt">
+                <span class="ps">$</span>
+                <span class="type">npm run check</span>
+              </div>
+              <div class="ln dim">&gt; mattpocock-skills@1.3.1 check</div>
+              <div class="ln dim">&gt; npm run check-plugin-version &amp;&amp; node scripts/check-catalog.mjs</div>
+              <div class="ln gap"></div>
+              <div class="ln dim">&gt; mattpocock-skills@1.3.1 check-plugin-version</div>
+              <div class="ln dim">&gt; node scripts/sync-plugin-version.mjs --check</div>
+              <div class="ln gap"></div>
+              <div class="ln">plugin.json version is 1.3.1 (already in sync)</div>
+              <div class="ln ok mark">check-catalog: 27 promoted skills, plugin.json, READMEs, docs, front matter, invocation flags, ask-matt, and prose (no em-dashes) are in sync</div>
+            </div>
+          </div>
+          <div class="caption-stage">
+            <div class="caption-pill">
+              <div class="caption-line">Restore the file. The check is green again.</div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+    <script>
+      document.querySelectorAll(".type").forEach(function (el) {
+        var text = el.textContent;
+        el.textContent = "";
+        for (var i = 0; i < text.length; i++) {
+          var s = document.createElement("span");
+          s.className = "ch";
+          s.textContent = text.charAt(i);
+          el.appendChild(s);
+        }
+      });
+
+      window.__timelines = window.__timelines || {};
+      var tl = gsap.timeline({ paused: true });
+
+      tl.fromTo("#s0 .inner", { opacity: 0 }, { opacity: 1, duration: 0.35, ease: "power2.out" }, 0);
+      tl.fromTo("#sp0", { scale: 0.92, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.35, ease: "power2.out" }, 0.1);
+      tl.fromTo("#s0 .display", { y: 16, opacity: 0 }, { y: 0, opacity: 1, duration: 0.45, ease: "power2.out" }, 0.16);
+      tl.fromTo(
+        "#s0 .lead, #s0 .cover-meta, #s0 .caption-pill",
+        { y: 10, opacity: 0 },
+        { y: 0, opacity: 1, duration: 0.4, stagger: 0.08, ease: "power2.out" },
+        0.32
+      );
+      tl.to("#s0 .inner", { opacity: 0, duration: 0.25, ease: "power1.in" }, 3.25);
+
+      tl.fromTo("#s1 .inner", { opacity: 0 }, { opacity: 1, duration: 0.3, ease: "power2.out" }, 3.5);
+      tl.fromTo("#s1 .type .ch", { opacity: 0 }, { opacity: 1, duration: 0.02, stagger: 0.04, ease: "none" }, 3.75);
+      tl.fromTo("#s1p .ln", { opacity: 0 }, { opacity: 1, duration: 0.16, stagger: 0.09, ease: "power1.out" }, 4.55);
+      tl.to("#s1 .inner", { opacity: 0, duration: 0.25, ease: "power1.in" }, 11.75);
+
+      tl.fromTo("#s2 .inner", { opacity: 0 }, { opacity: 1, duration: 0.3, ease: "power2.out" }, 12.0);
+      tl.fromTo("#s2 .type .ch", { opacity: 0 }, { opacity: 1, duration: 0.02, stagger: 0.028, ease: "none" }, 12.2);
+      tl.fromTo("#s2cmd2", { opacity: 0 }, { opacity: 1, duration: 0.15, ease: "none" }, 13.4);
+      tl.fromTo("#s2p .ln", { opacity: 0 }, { opacity: 1, duration: 0.16, stagger: 0.1, ease: "power1.out" }, 13.55);
+      tl.to("#s2 .inner", { opacity: 0, duration: 0.25, ease: "power1.in" }, 19.75);
+
+      tl.fromTo("#s3 .inner", { opacity: 0 }, { opacity: 1, duration: 0.3, ease: "power2.out" }, 20.0);
+      tl.fromTo("#s3 .type .ch", { opacity: 0 }, { opacity: 1, duration: 0.02, stagger: 0.035, ease: "none" }, 20.2);
+      tl.fromTo("#s3p .ln", { opacity: 0 }, { opacity: 1, duration: 0.16, stagger: 0.1, ease: "power1.out" }, 21.15);
+      tl.to("#s3 .inner", { opacity: 0, duration: 0.25, ease: "power1.in" }, 26.25);
+
+      tl.fromTo("#s4 .inner", { opacity: 0 }, { opacity: 1, duration: 0.3, ease: "power2.out" }, 26.5);
+      tl.fromTo("#s4 .type .ch", { opacity: 0 }, { opacity: 1, duration: 0.02, stagger: 0.04, ease: "none" }, 26.7);
+      tl.fromTo("#s4p .ln", { opacity: 0 }, { opacity: 1, duration: 0.16, stagger: 0.09, ease: "power1.out" }, 27.45);
+
+      window.__timelines["main"] = tl;
+      tl.seek(0);
+    </script>
+  </body>
+</html>
