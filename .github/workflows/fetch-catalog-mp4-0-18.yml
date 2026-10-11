@@ -1,0 +1,19 @@
+name: fetch-catalog-mp4-0-18
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/fetch-catalog-mp4-0-18.yml"
+      - "_render/mattpocock-skills-catalog-check/fetch_mp4_0_18.py"
+  workflow_dispatch:
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Fetch mp4.0-18 ingest chunks
+        run: python3 _render/mattpocock-skills-catalog-check/fetch_mp4_0_18.py
