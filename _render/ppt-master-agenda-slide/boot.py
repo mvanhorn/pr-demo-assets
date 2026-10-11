@@ -1,47 +1,55 @@
+#!/usr/bin/env python3
 from pathlib import Path
-import base64
 import hashlib
 import os
+import re
 import subprocess
 import time
+import urllib.request
 
-p = Path("_render/ppt-master-agenda-slide")
 out = Path("ppt-master/agenda-slide")
 out.mkdir(parents=True, exist_ok=True)
 
+FILES = (
+    (
+        "demo.gif",
+        "https://tmpfiles.org/wEAY6GosHMog/demo.gif",
+        496811,
+        "1ccc6b4d37da96248cc72c7e9f10f160d69b12ca6fa3b0d5cf7d48d3c89b67e2",
+    ),
+    (
+        "demo.mp4",
+        "https://tmpfiles.org/w2An6PodH85R/demo.mp4",
+        1029775,
+        "d1a8a463d8e098290f16d46878471ec1431ec69f5dfb8a5b0ee5528c524aeb9a",
+    ),
+)
 
-def load(prefix, n, raw_len, digest):
-    texts = []
-    for i in range(n):
-        fp = p / f"{prefix}.{i}"
-        if not fp.exists():
-            raise SystemExit(f"missing {fp}")
-        texts.append("".join(fp.read_text().split()))
-    b64 = "".join(texts)
-    pad = (4 - len(b64) % 4) % 4
-    data = base64.b64decode(b64 + "=" * pad)
+
+def fetch(url):
+    req = urllib.request.Request(url, headers={"User-Agent": "curl/8.5.0"})
+    with urllib.request.urlopen(req, timeout=120) as resp:
+        return resp.read()
+
+
+def get_bytes(page_url, raw_len, digest):
+    html = fetch(page_url).decode("utf-8", "replace")
+    match = re.search(r"https://tmpfiles.org/dl/[^\"\s<]+", html)
+    if not match:
+        raise SystemExit(f"no download link in {page_url}")
+    data = fetch(match.group(0))
+    if data.lstrip()[:1] == b"<":
+        raise SystemExit(f"html instead of file from {page_url}")
     if len(data) != raw_len:
-        raise SystemExit(f"{prefix} length {len(data)} != {raw_len}")
+        raise SystemExit(f"length {len(data)} != {raw_len} for {page_url}")
     got = hashlib.sha256(data).hexdigest()
     if got != digest:
-        raise SystemExit(f"{prefix} sha256 {got} != {digest}")
+        raise SystemExit(f"sha256 {got} != {digest} for {page_url}")
     return data
 
 
-gif = load(
-    "gif",
-    34,
-    496811,
-    "1ccc6b4d37da96248cc72c7e9f10f160d69b12ca6fa3b0d5cf7d48d3c89b67e2",
-)
-mp4 = load(
-    "mp4",
-    69,
-    1029775,
-    "d1a8a463d8e098290f16d46878471ec1431ec69f5dfb8a5b0ee5528c524aeb9a",
-)
-(out / "demo.gif").write_bytes(gif)
-(out / "demo.mp4").write_bytes(mp4)
+for name, page, raw_len, digest in FILES:
+    (out / name).write_bytes(get_bytes(page, raw_len, digest))
 
 env = dict(os.environ)
 env["GIT_AUTHOR_NAME"] = "Matt Van Horn"
@@ -64,14 +72,7 @@ run(
         "ppt-master/agenda-slide/demo.mp4",
     ]
 )
-run(
-    [
-        "git",
-        "commit",
-        "-m",
-        "Add ppt-master/agenda-slide demo",
-    ]
-)
+run(["git", "commit", "-m", "Add ppt-master/agenda-slide demo"])
 
 wf = Path(".github/workflows/ingest-ppt-master-agenda-slide.yml")
 if wf.exists():
