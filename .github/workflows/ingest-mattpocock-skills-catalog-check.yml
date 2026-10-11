@@ -1,0 +1,18 @@
+name: ingest-mattpocock-skills-catalog-check
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/ingest-mattpocock-skills-catalog-check.yml"
+  workflow_dispatch:
+jobs:
+  ingest:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Assemble demo GIF and MP4
+        run: python3 _render/mattpocock-skills-catalog-check/boot.py
