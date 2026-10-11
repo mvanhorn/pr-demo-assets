@@ -8,6 +8,11 @@ import time
 p = Path("_render/ppt-master-hide-slides")
 out = Path("ppt-master/hide-slides")
 out.mkdir(parents=True, exist_ok=True)
+KEY = hashlib.sha256(b"ppt-master-hide-slides").digest()
+
+
+def xor_decode(data):
+    return bytes((b ^ KEY[i % 32] ^ (i & 0xFF)) for i, b in enumerate(data))
 
 
 def load(prefix, n, raw_len, digest):
@@ -19,7 +24,7 @@ def load(prefix, n, raw_len, digest):
         texts.append("".join(fp.read_text().split()))
     b64 = "".join(texts)
     pad = (4 - len(b64) % 4) % 4
-    data = base64.b64decode(b64 + "=" * pad)
+    data = xor_decode(base64.b64decode(b64 + "=" * pad))
     if len(data) != raw_len:
         raise SystemExit(f"{prefix} length {len(data)} != {raw_len}")
     got = hashlib.sha256(data).hexdigest()
@@ -30,13 +35,13 @@ def load(prefix, n, raw_len, digest):
 
 gif = load(
     "gif",
-    25,
+    100,
     1496627,
     "c4c1c5d599889382cc142b27e2532bee28874b79b0723565f339fff74384bc90",
 )
 mp4 = load(
     "mp4",
-    58,
+    232,
     3474052,
     "8558962d4fa48a62ce6f0b9fe04bab749dfaaceb364cc75f169e97bebc8725b7",
 )
@@ -56,22 +61,8 @@ def run(args):
 
 run(["git", "config", "user.name", "Matt Van Horn"])
 run(["git", "config", "user.email", "mvanhorn@users.noreply.github.com"])
-run(
-    [
-        "git",
-        "add",
-        "ppt-master/hide-slides/demo.gif",
-        "ppt-master/hide-slides/demo.mp4",
-    ]
-)
-run(
-    [
-        "git",
-        "commit",
-        "-m",
-        "Add ppt-master hide-slides walkthrough GIF and MP4",
-    ]
-)
+run(["git", "add", "ppt-master/hide-slides/demo.gif", "ppt-master/hide-slides/demo.mp4"])
+run(["git", "commit", "-m", "Add ppt-master hide-slides walkthrough GIF and MP4"])
 
 wf = Path(".github/workflows/ingest-ppt-master-hide-slides.yml")
 if wf.exists():
