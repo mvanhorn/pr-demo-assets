@@ -1,0 +1,20 @@
+name: ingest-html-report-mp4-10-19
+on:
+  push:
+    branches: [ingest/html-report-mp4-b]
+    paths:
+      - ".github/workflows/ingest-html-report-mp4-10-19.yml"
+      - "_render/mattpocock-skills-html-report-inline/fetch_mp4_10_19.py"
+  workflow_dispatch:
+jobs:
+  ingest:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ingest/html-report-mp4-b
+          fetch-depth: 0
+      - name: Fetch mp4.10-19 ingest chunks
+        run: python3 _render/mattpocock-skills-html-report-inline/fetch_mp4_10_19.py
