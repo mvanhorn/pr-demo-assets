@@ -30,13 +30,13 @@ def load(prefix, n, raw_len, digest):
 
 gif = load(
     "gif",
-    3,
+    11,
     965908,
     "66e0c93d2002f5c712b587ff1ea0c06a2bc17995773a1c63f15af9e14151095e",
 )
 mp4 = load(
     "mp4",
-    6,
+    22,
     1934612,
     "78b354f199f98e9db6f03f04db53eaca802abcbe9570804fc0d5d9df5efe3b92",
 )
