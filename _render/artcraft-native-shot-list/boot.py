@@ -30,31 +30,31 @@ def load(prefix, n, raw_len, digest):
 
 gif = load(
     "gif",
-    8,
+    139,
     8311818,
     "a56f7855bab239a026d2202e9d896b2ee619248747d8cdaa9fef31c9fd13d005",
 )
 mp4 = load(
     "mp4",
-    16,
+    287,
     17162754,
     "42d36beafafae1e72e45aa6299b2ed1729962a96411c4c52d9e1707e090e58b6",
 )
 before = load(
     "before",
-    1,
+    3,
     174753,
     "21c4a8c263f3eb4d3ffd2889252f580e7c0afcbc4d123f278a76b22ffb774a1c",
 )
 after_empty = load(
     "after_empty",
-    1,
+    2,
     113053,
     "d0d44b7c8d88c55ac31759e83afe24bbd2ec8332971d8c7cf4d76a48ee2a22a8",
 )
 after = load(
     "after",
-    1,
+    3,
     160100,
     "c7774f705a78a2415216d27c6727e67fe8d00e9565c9c5c39c874d95d7daec53",
 )
