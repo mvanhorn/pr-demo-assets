@@ -13,24 +13,30 @@ OUT = Path("artcraft/native-frame-extract")
 OUT.mkdir(parents=True, exist_ok=True)
 
 ASSETS = (
-    ("before.b64", "before.png", 115167, "61c024d3def4afc80886d89b432d26c10657fef4f10eac60998493bdad0569f9"),
-    ("after-empty.b64", "after-empty.png", 117442, "7e608626a8bb3bbdad3f75e27d242ef400ad69f36828eb99182481349734007d"),
-    ("after.b64", "after.png", 215906, "99a6ca4117a6599e27c606955c198de0c3447cce49ace78668dd081f73b7e35f"),
-    ("loaded.b64", "loaded.png", 144413, "90542b891e5624e1c0d239046bc58bc8b092c48e9c02109cb8e1ba4634af26b4"),
-    ("frame-01.b64", "frame-01-00-00-000.png", 64535, "ca4cbf57f848af9e81bf598b76dc044285169b76aa39cc09f1427d82018cb679"),
-    ("frame-10.b64", "frame-10-00-00-900.png", 67371, "3d0ccb94bbd108e84e16fab5ab18f9a02920e90b169e68722fefb9aeaf8556fc"),
+    ("before", 8, "before.png", 115167, "61c024d3def4afc80886d89b432d26c10657fef4f10eac60998493bdad0569f9"),
+    ("afterempty", 8, "after-empty.png", 117442, "7e608626a8bb3bbdad3f75e27d242ef400ad69f36828eb99182481349734007d"),
+    ("after", 15, "after.png", 215906, "99a6ca4117a6599e27c606955c198de0c3447cce49ace78668dd081f73b7e35f"),
+    ("loaded", 10, "loaded.png", 144413, "90542b891e5624e1c0d239046bc58bc8b092c48e9c02109cb8e1ba4634af26b4"),
+    ("frame01", 5, "frame-01-00-00-000.png", 64535, "ca4cbf57f848af9e81bf598b76dc044285169b76aa39cc09f1427d82018cb679"),
+    ("frame10", 5, "frame-10-00-00-900.png", 67371, "3d0ccb94bbd108e84e16fab5ab18f9a02920e90b169e68722fefb9aeaf8556fc"),
 )
 
 
-def decode(name, raw_len, digest):
-    text = "".join((ROOT / name).read_text().split())
-    pad = (4 - len(text) % 4) % 4
-    data = base64.b64decode(text + "=" * pad)
+def load(prefix, n, raw_len, digest):
+    texts = []
+    for i in range(n):
+        fp = ROOT / f"{prefix}.{i}"
+        if not fp.exists():
+            raise SystemExit(f"missing {fp}")
+        texts.append("".join(fp.read_text().split()))
+    b64 = "".join(texts)
+    pad = (4 - len(b64) % 4) % 4
+    data = base64.b64decode(b64 + "=" * pad)
     if len(data) != raw_len:
-        raise SystemExit(f"{name} length {len(data)} != {raw_len}")
+        raise SystemExit(f"{prefix} length {len(data)} != {raw_len}")
     got = hashlib.sha256(data).hexdigest()
     if got != digest:
-        raise SystemExit(f"{name} sha256 {got} != {digest}")
+        raise SystemExit(f"{prefix} sha256 {got} != {digest}")
     return data
 
 
@@ -43,8 +49,8 @@ shutil.copy(ROOT / "hyperframes.json", COMP / "hyperframes.json")
 shutil.copy(ROOT / "package.json", COMP / "package.json")
 
 decoded = {}
-for b64_name, png_name, raw_len, digest in ASSETS:
-    data = decode(b64_name, raw_len, digest)
+for prefix, n, png_name, raw_len, digest in ASSETS:
+    data = load(prefix, n, raw_len, digest)
     decoded[png_name] = data
     (COMP / "assets" / png_name).write_bytes(data)
 
