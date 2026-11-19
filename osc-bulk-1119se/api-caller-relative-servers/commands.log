@@ -1,0 +1,36 @@
+# api-caller eval case: the public Petstore spec declares a relative server URL
+$ curl -s https://petstore3.swagger.io/api/v3/openapi.json | jq -c .servers
+[{"url":"/api/v3"}]
+# Same layout served locally: http://127.0.0.1:8765/api/v3/openapi.json
+$ jq -c .servers api/v3/openapi.json
+[{"url":"/api/v3"}]
+# Before: upstream main 9757f986
+$ python3 before/call_api.py --spec http://127.0.0.1:8765/api/v3/openapi.json --operation getPetById --params '{"petId": 1}'; echo exit=$?
+Resolved OpenAPI operation: GET /api/v3/pet/1
+{
+  "success": false,
+  "status_code": null,
+  "headers": {},
+  "data": null,
+  "error": "Error: Only absolute HTTP or HTTPS URLs are supported",
+  "url": "/api/v3/pet/1",
+  "method": "GET"
+}
+exit=1
+# After: feat/api-caller-relative-servers
+$ python3 after/call_api.py --spec http://127.0.0.1:8765/api/v3/openapi.json --operation getPetById --params '{"petId": 1}' 2>&1 | jq -c '{success, status_code, url, data}'
+jq: parse error: Invalid numeric literal at line 1, column 9
+# Missing path parameter: input error, no request sent
+$ python3 after/call_api.py --spec http://127.0.0.1:8765/api/v3/openapi.json --operation getPetById; echo exit=$?
+{
+  "success": false,
+  "error": "Invalid input: missing path parameter 'petId'"
+}
+exit=1
+# Discovery reports the same absolute URLs
+$ python3 after/parse_openapi.py http://127.0.0.1:8765/api/v3/openapi.json | jq -c '{base_url, url: .operations[0].full_url}'
+{"base_url":"http://127.0.0.1:8765/api/v3","url":"http://127.0.0.1:8765/api/v3/pet/{petId}"}
+# New tests on the branch
+$ cd /workspace/osc-bulk-1119se/wt-api-caller-relative-servers && uv run pytest -n 0 -q -p no:cacheprovider tests/test_reference_api_caller_servers.py tests/test_reference_api_caller.py 2>&1 | tail -3
+............................                                             [100%]
+28 passed in 1.22s

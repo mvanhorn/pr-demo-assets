@@ -1,0 +1,38 @@
+# text-analyzer: three sentences with a file name, a decimal and a version
+$ cat notes.txt
+Open input.txt and report the totals. Pi is 3.14. Ship v1.2.3 today.
+# Before: upstream main 9757f986
+$ python3 before/analyze_text.py --file notes.txt --json | jq -c '{word_count, sentence_count}'
+{"word_count":12,"sentence_count":7}
+# After: feat/text-analyzer-sentence-ends
+$ python3 after/analyze_text.py --file notes.txt --json | jq -c '{word_count, sentence_count}'
+{"word_count":12,"sentence_count":3}
+$ python3 after/analyze_text.py --text 'Wait... what? He said "go." Then left.' --json | jq -c '{sentence_count}'
+{"sentence_count":4}
+# Before: --file pointed at a directory
+$ python3 before/analyze_text.py --file reports; echo exit=$?
+Traceback (most recent call last):
+  File "/workspace/osc-bulk-1119se/demo/text/stage/before/analyze_text.py", line 84, in <module>
+    main()
+    ~~~~^^
+  File "/workspace/osc-bulk-1119se/demo/text/stage/before/analyze_text.py", line 71, in main
+    text = path.read_text(encoding="utf-8", errors="replace")
+  File "/usr/lib/python3.13/pathlib/_local.py", line 548, in read_text
+    return PathBase.read_text(self, encoding, errors, newline)
+           ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.13/pathlib/_abc.py", line 632, in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors, newline=newline) as f:
+         ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.13/pathlib/_local.py", line 539, in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+IsADirectoryError: [Errno 21] Is a directory: 'reports'
+exit=1
+# After: a plain error and exit 1
+$ python3 after/analyze_text.py --file reports; echo exit=$?
+Error: not a file: reports
+exit=1
+# New tests on the branch
+$ cd /workspace/osc-bulk-1119se/wt-text-analyzer-sentence-ends && uv run pytest -n 0 -q -p no:cacheprovider tests/test_reference_text_analyzer.py 2>&1 | tail -2
+...................                                                      [100%]
+19 passed in 0.11s
